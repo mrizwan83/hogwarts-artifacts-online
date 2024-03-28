@@ -1,6 +1,5 @@
 package com.rizzywebworks.hogwartsartifactsonline.system.exception;
 
-import com.rizzywebworks.hogwartsartifactsonline.artifact.ArtifactNotFoundException;
 import com.rizzywebworks.hogwartsartifactsonline.system.Result;
 import com.rizzywebworks.hogwartsartifactsonline.system.StatusCode;
 import org.springframework.http.HttpStatus;
@@ -23,11 +22,12 @@ public class ExceptionHandlerAdvice {
 
     // if we encounter this exception then we package in result and handle it like this
     // of course before returning it spring mvc will serialize this java object into json
-    @ExceptionHandler(ArtifactNotFoundException.class)
+    @ExceptionHandler(ObjectNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    Result handleArtifactNotFoundException(ArtifactNotFoundException ex) {
+    Result handleObjectNotFoundException(Exception ex) {
         return new Result(false, StatusCode.NOT_FOUND, ex.getMessage());
     }
+
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
