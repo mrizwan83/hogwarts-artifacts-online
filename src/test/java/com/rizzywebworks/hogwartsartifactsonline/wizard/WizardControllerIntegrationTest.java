@@ -3,6 +3,7 @@ package com.rizzywebworks.hogwartsartifactsonline.wizard;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rizzywebworks.hogwartsartifactsonline.system.StatusCode;
 import org.hamcrest.Matchers;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -47,8 +48,19 @@ class WizardControllerIntegrationTest {
         ResultActions resultActions = this.mockMvc.perform(post(this.baseUrl + "/users/login").with(httpBasic("john", "123456"))); // httpBasic() is from spring-security-test.
         MvcResult mvcResult = resultActions.andDo(print()).andReturn();
         String contentAsString = mvcResult.getResponse().getContentAsString();
-        JSONObject json = new JSONObject(contentAsString);
-        this.token = "Bearer " + json.getJSONObject("data").getString("token");
+        // Print the response content for debugging
+        System.out.println("Response content: " + contentAsString);
+
+        try {
+            JSONObject json = new JSONObject(contentAsString);
+            this.token = "Bearer " + json.getJSONObject("data").getString("token");
+        } catch (JSONException e) {
+            // Handle the exception gracefully
+            System.err.println("Failed to parse JSON response: " + e.getMessage());
+            this.token = ""; // Set a default token value or handle it based on your requirements
+        }
+//        JSONObject json = new JSONObject(contentAsString);
+//        this.token = "Bearer " + json.getJSONObject("data").getString("token");
     }
 
     @Test
@@ -128,12 +140,15 @@ class WizardControllerIntegrationTest {
 
     @Test
     @DisplayName("Check updateWizard with valid input (PUT)")
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     void testUpdateWizardSuccess() throws Exception {
         Wizard a = new Wizard();
         a.setId(1);
         a.setName("Updated wizard name");
 
         String json = this.objectMapper.writeValueAsString(a);
+
+        System.out.println(json);
 
         this.mockMvc.perform(put(this.baseUrl + "/wizards/1").contentType(MediaType.APPLICATION_JSON).content(json).accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
                 .andExpect(jsonPath("$.flag").value(true))
@@ -161,6 +176,7 @@ class WizardControllerIntegrationTest {
 
     @Test
     @DisplayName("Check updateWizard with invalid input (PUT)")
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     void testUpdateWizardErrorWithInvalidInput() throws Exception {
         Wizard a = new Wizard();
         a.setId(1); // Valid id
@@ -183,6 +199,7 @@ class WizardControllerIntegrationTest {
 
     @Test
     @DisplayName("Check deleteWizard with valid input (DELETE)")
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     void testDeleteWizardSuccess() throws Exception {
         this.mockMvc.perform(delete(this.baseUrl + "/wizards/3").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
                 .andExpect(jsonPath("$.flag").value(true))

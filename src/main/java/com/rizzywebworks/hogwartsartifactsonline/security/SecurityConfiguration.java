@@ -75,12 +75,12 @@ public class SecurityConfiguration {
                         // disallow everything else
                         .anyRequest().authenticated() // always a good idea to put this as last.
                 )
-                .headers(headers -> headers.frameOptions().disable()) // this is for h2 browser console access
+                .headers(headers -> headers.frameOptions(Customizer.withDefaults()).disable()) // this is for h2 browser console access
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults()) // enable cors
                 .httpBasic(httpBasic -> httpBasic.authenticationEntryPoint(this.customBasicAuthenticationEntryPoint)) // enable http basic authentication and handle errors
-                .oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt()
-                        .and().authenticationEntryPoint(this.customBearerTokenAuthenticationEntryPoint)
+                .oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(Customizer.withDefaults())
+                        .authenticationEntryPoint(this.customBearerTokenAuthenticationEntryPoint)
                         .accessDeniedHandler(this.customBearerTokenAccessDeniedHandler)
                 ) // enable jwt with spring security for auth
                 .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // do not keep session, saves ram
